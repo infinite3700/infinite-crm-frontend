@@ -6,6 +6,17 @@ export const leadService = {
   // Get all leads with optional filters
   getAllLeads: async (params = {}) => {
     try {
+      const response = await apiMethods.get(API_ENDPOINTS.LEADS.GET_ALL, { params });
+      
+      // Normalize response structure
+      return Array.isArray(response) ? response : response.leads || response.data || [];
+    } catch (error) {
+      throw new Error(error.message || 'Failed to fetch leads');
+    }
+  },
+
+  getMyLeads: async (params = {}) => {
+    try {
       const response = await apiMethods.get(API_ENDPOINTS.LEADS.MY_LEAD, { params });
       
       // Normalize response structure
