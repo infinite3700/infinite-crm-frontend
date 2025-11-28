@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
-import { Megaphone, Plus, Search, Edit, Trash2, Calendar } from 'lucide-react';
-import GenericDeleteModal from '../components/modals/GenericDeleteModal';
-import CampaignFormModal from '../components/modals/CampaignFormModal';
-import CanAccess from '../components/CanAccess';
-import { PERMISSIONS } from '../utils/permissions';
+import { Calendar, Edit, Megaphone, Plus, Search, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { settingsService } from '../api/settingsService';
+import CanAccess from '../components/CanAccess';
+import CampaignFormModal from '../components/modals/CampaignFormModal';
+import GenericDeleteModal from '../components/modals/GenericDeleteModal';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { PERMISSIONS } from '../utils/permissions';
 
 const Campaigns = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,7 +43,6 @@ const Campaigns = () => {
       setCampaigns(Array.isArray(response) ? response : []);
     } catch (err) {
       setError(err.message || 'Failed to load campaigns');
-      console.error('Error loading campaigns:', err);
     } finally {
       setLoading(false);
     }
@@ -124,7 +123,6 @@ const Campaigns = () => {
       handleCloseDeleteModal();
     } catch (err) {
       setError(err.message || 'Failed to delete campaign');
-      console.error('Error deleting campaign:', err);
     } finally {
       setDeleteModal((prev) => ({ ...prev, isLoading: false }));
     }

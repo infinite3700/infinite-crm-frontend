@@ -1,21 +1,20 @@
-import React from 'react';
-import { Badge } from '../ui/badge';
 import {
-  Building2,
-  Phone,
-  MapPin,
-  Calendar,
-  Edit,
-  Trash2,
-  Eye,
-  User,
-  Megaphone,
+    Building2,
+    Calendar,
+    Edit,
+    Eye,
+    MapPin,
+    Megaphone,
+    Phone,
+    Trash2,
+    User,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import CanAccess from '../CanAccess';
 import { PERMISSIONS } from '../../utils/permissions';
+import CanAccess from '../CanAccess';
+import { Badge } from '../ui/badge';
 
-const LeadCard = ({ lead, onDelete }) => {
+const LeadCard = ({ lead, onDelete, currentUser }) => {
   const navigate = useNavigate();
 
   // Format date for display
@@ -191,6 +190,7 @@ const LeadCard = ({ lead, onDelete }) => {
                 onClick={handleEdit}
                 className="p-1.5 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors"
                 title="Edit"
+                disabled={lead.assignTo?._id !== currentUser?._id}
               >
                 <Edit className="h-3.5 w-3.5" />
               </button>
@@ -200,6 +200,7 @@ const LeadCard = ({ lead, onDelete }) => {
                 onClick={handleDelete}
                 className="p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded transition-colors"
                 title="Delete"
+                disabled={lead.assignTo?._id !== currentUser?._id}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>

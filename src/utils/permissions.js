@@ -129,9 +129,7 @@ export const hasPermission = (user, permission) => {
 
     // Debug logging in development
     if (import.meta.env.DEV) {
-        console.log('[hasPermission] Checking permission:', permission);
-        console.log('[hasPermission] User role:', roleName);
-        console.log('[hasPermission] Role permissions:', rolePermissions);
+        // Permission checking debug logs removed
     }
 
     // Super Admin has all permissions
@@ -142,18 +140,12 @@ export const hasPermission = (user, permission) => {
     // Check if permission exists in role's permissions
     if (rolePermissions.length > 0) {
         const hasIt = rolePermissions.includes(permission);
-        if (import.meta.env.DEV) {
-            console.log('[hasPermission] Result:', hasIt);
-        }
         return hasIt;
     }
 
     // Fallback to default role permissions
     const defaultPermissions = DEFAULT_ROLE_PERMISSIONS[roleName] || [];
     const hasDefault = defaultPermissions.includes(permission);
-    if (import.meta.env.DEV) {
-        console.log('[hasPermission] Using default permissions, result:', hasDefault);
-    }
     return hasDefault;
 };
 
