@@ -1,50 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { User, MapPin, GitBranch, Package, Shield } from 'lucide-react';
+import { selectCurrentUser } from '../store/authSlice';
+import { hasPermission } from '../utils/permissions';
+import { SETTINGS_TABS, getAccessibleSettingsTabs } from '../config/navigation';
 
-// Import tab components (will create these next)
+// Import tab components
 import ProfileTab from '../components/settings/ProfileTab';
 import GeographyTab from '../components/settings/GeographyTab';
 import LeadStagesTab from '../components/settings/LeadStagesTab';
 import ProductsTab from '../components/settings/ProductsTab';
 import RolesPermissionsTab from '../components/settings/RolesPermissionsTab';
 
+// Component mapping
+const TAB_COMPONENTS = {
+  profile: ProfileTab,
+  geography: GeographyTab,
+  'lead-stages': LeadStagesTab,
+  'products-categories': ProductsTab,
+  'roles-permissions': RolesPermissionsTab,
+};
+
 const Settings = () => {
+  const currentUser = useSelector(selectCurrentUser);
   const [activeTab, setActiveTab] = useState('profile');
 
-  const tabs = [
-    {
-      id: 'profile',
-      label: 'Profile',
-      icon: User,
-      component: ProfileTab,
-    },
-    {
-      id: 'geography',
-      label: 'Geography',
-      icon: MapPin,
-      component: GeographyTab,
-    },
-    {
-      id: 'lead-stages',
-      label: 'Lead Stages',
-      icon: GitBranch,
-      component: LeadStagesTab,
-    },
-    {
-      id: 'products-categories',
-      label: 'Products & Categories',
-      icon: Package,
-      component: ProductsTab,
-    },
-    {
-      id: 'roles-permissions',
-      label: 'Roles & Permissions',
-      icon: Shield,
-      component: RolesPermissionsTab,
-    },
-  ];
+  // Get accessible tabs for current user using centralized config
+  const tabs = getAccessibleSettingsTabs(currentUser, hasPermission);
+
+  // Set default active tab to first accessible tab
+  useEffect(() => {
+    if (tabs.length > 0 && !tabs.find((tab) => tab.id === activeTab)) {
+      setActiveTab(tabs[0].id);
+    }
+  }, [tabs, activeTab]);
 
   return (
     <div className="space-y-4 sm:space-y-6 animate-fade-in px-2 sm:px-0">
@@ -74,15 +64,7 @@ const Settings = () => {
                           <Icon className="h-2.5 w-2.5 sm:h-4 sm:w-4 flex-shrink-0" />
                           <span className="text-center leading-tight truncate w-full">
                             <span className="hidden md:inline">{tab.label}</span>
-                            <span className="md:hidden leading-[10px]">
-                              {tab.id === 'products-categories'
-                                ? 'Products'
-                                : tab.id === 'roles-permissions'
-                                ? 'Roles'
-                                : tab.id === 'lead-stages'
-                                ? 'Stages'
-                                : tab.label}
-                            </span>
+                            <span className="md:hidden leading-[10px]">{tab.shortLabel}</span>
                           </span>
                         </TabsTrigger>
                       );
@@ -95,13 +77,14 @@ const Settings = () => {
             {/* Tab Content */}
             <div className="p-3 sm:p-4 lg:p-6">
               {tabs.map((tab) => {
-                const TabComponent = tab.component;
+                const TabComponent = TAB_COMPONENTS[tab.id];
+                const Icon = tab.icon;
                 return (
                   <TabsContent key={tab.id} value={tab.id} className="mt-0">
                     <div className="space-y-3 sm:space-y-4">
                       <div className="flex items-center gap-2 sm:gap-3 pb-2 sm:pb-3 border-b border-gray-100">
                         <div className="p-1.5 sm:p-2 rounded-lg bg-gradient-to-br from-blue-500/10 to-purple-500/10 flex-shrink-0">
-                          <tab.icon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
+                          <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                         </div>
                         <div className="min-w-0 flex-1">
                           <h2 className="section-title truncate">{tab.label}</h2>

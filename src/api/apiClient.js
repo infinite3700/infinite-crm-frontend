@@ -65,7 +65,20 @@ apiClient.interceptors.response.use(
             // Server responded with error status
             const { status, data } = response;
 
+            // Log the error in development
+            if (import.meta.env.DEV) {
+                console.error(`❌ API Error: ${status}`, data);
+            }
+
+            // Extract error message from various possible response formats
+            let errorMessage = data?.message || data?.error || data?.msg;
+
+            // Handle different status codes
             switch (status) {
+                case 400:
+                    console.error('📝 Bad Request:', errorMessage || 'Invalid request data');
+                    break;
+
                 case 401:
                     // Unauthorized - clear auth data and redirect to login
                     console.warn('🔐 Authentication failed - redirecting to login');
@@ -76,74 +89,95 @@ apiClient.interceptors.response.use(
                     if (window.location.pathname !== '/login') {
                         window.location.href = '/login';
                     }
+                    errorMessage = errorMessage || 'Authentication failed';
                     break;
 
                 case 403:
                     console.error('🚫 Access forbidden');
+                    errorMessage = errorMessage || 'Access forbidden';
                     break;
 
                 case 404:
                     console.error('🔍 Resource not found');
+                    errorMessage = errorMessage || 'Resource not found';
+                    break;
+
+                case 409:
+                    console.error('⚠️ Conflict:', errorMessage || 'Resource conflict');
                     break;
 
                 case 422:
                     console.error('📝 Validation errors:', data);
+                    errorMessage = errorMessage || 'Validation failed';
                     break;
 
                 case 500:
                     console.error('🔥 Server error');
+                    errorMessage = errorMessage || 'Internal server error';
                     break;
 
                 default:
-                    console.error(`❌ HTTP ${status}:`, data?.message || 'Unknown error');
+                    console.error(`❌ HTTP ${status}:`, errorMessage || 'Unknown error');
+                    errorMessage = errorMessage || `HTTP ${status} Error`;
             }
 
-            // Return formatted error
-            return Promise.reject(new Error(data?.message || `HTTP ${status} Error`));
+            // Return formatted error with the actual message from backend
+            return Promise.reject(new Error(errorMessage));
 
         } else if (request) {
-            // Network error
+            // Request was made but no response received (network error)
             console.error('🌐 Network Error:', message);
             return Promise.reject(new Error('Network error - please check your connection'));
 
         } else {
-            // Something else happened
+            // Something else happened in setting up the request
             console.error('⚠️ Request Error:', message);
             return Promise.reject(new Error(message || 'Request failed'));
         }
     }
 );
 
+// Helper function to check response status
+const checkResponseStatus = (responseData) => {
+    // Check if backend returned status: false (error response with 200 status code)
+    if (responseData && typeof responseData.status === 'boolean' && responseData.status === false) {
+        // Extract error message from various possible fields
+        const errorMessage = responseData.message || responseData.error || responseData.msg || 'Request failed';
+        throw new Error(errorMessage);
+    }
+    return responseData;
+};
+
 // Generic API methods
 export const apiMethods = {
     // GET request
     get: async (url, config = {}) => {
         const response = await apiClient.get(url, config);
-        return response.data;
+        return checkResponseStatus(response.data);
     },
 
     // POST request
     post: async (url, data = {}, config = {}) => {
         const response = await apiClient.post(url, data, config);
-        return response.data;
+        return checkResponseStatus(response.data);
     },
 
     // PUT request
     put: async (url, data = {}, config = {}) => {
         const response = await apiClient.put(url, data, config);
-        return response.data;
+        return checkResponseStatus(response.data);
     },
 
     // PATCH request
     patch: async (url, data = {}, config = {}) => {
         const response = await apiClient.patch(url, data, config);
-        return response.data;
+        return checkResponseStatus(response.data);
     },
 
     // DELETE request
     delete: async (url, config = {}) => {
         const response = await apiClient.delete(url, config);
-        return response.data;
+        return checkResponseStatus(response.data);
     },
 };
 
@@ -178,7 +212,7 @@ export const crudService = {
 
     // Delete item
     delete: async (endpoint, id) => {
-        return apiMethods.delete(`${endpoint}/${id}`);
+        return apiMethods.delete(`${endpoint}/${id}/hard`);
     },
 };
 

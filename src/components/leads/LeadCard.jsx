@@ -1,7 +1,19 @@
 import React from 'react';
 import { Badge } from '../ui/badge';
-import { Building2, Phone, MapPin, Calendar, Edit, Trash2, Eye, User, Megaphone } from 'lucide-react';
+import {
+  Building2,
+  Phone,
+  MapPin,
+  Calendar,
+  Edit,
+  Trash2,
+  Eye,
+  User,
+  Megaphone,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import CanAccess from '../CanAccess';
+import { PERMISSIONS } from '../../utils/permissions';
 
 const LeadCard = ({ lead, onDelete }) => {
   const navigate = useNavigate();
@@ -64,7 +76,7 @@ const LeadCard = ({ lead, onDelete }) => {
 
   const stageName =
     typeof lead.stage === 'object' && lead.stage ? lead.stage.stage : lead.stage || 'N/A';
-  
+
   const campaignName =
     typeof lead.campaignId === 'object' && lead.campaignId ? lead.campaignId.campaignName : null;
 
@@ -174,20 +186,24 @@ const LeadCard = ({ lead, onDelete }) => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-1 ml-2">
-            <button
-              onClick={handleEdit}
-              className="p-1.5 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors"
-              title="Edit"
-            >
-              <Edit className="h-3.5 w-3.5" />
-            </button>
-            <button
-              onClick={handleDelete}
-              className="p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded transition-colors"
-              title="Delete"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+            <CanAccess permission={PERMISSIONS.LEADS_UPDATE}>
+              <button
+                onClick={handleEdit}
+                className="p-1.5 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors"
+                title="Edit"
+              >
+                <Edit className="h-3.5 w-3.5" />
+              </button>
+            </CanAccess>
+            <CanAccess permission={PERMISSIONS.LEADS_DELETE}>
+              <button
+                onClick={handleDelete}
+                className="p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded transition-colors"
+                title="Delete"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </CanAccess>
           </div>
         </div>
       </div>

@@ -23,6 +23,7 @@ import { userService } from '../api/userService';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
 import { FormField } from '../components/ui/form-field';
+import { MultiSelect } from '../components/ui/multi-select';
 import { selectCurrentUser } from '../store/authSlice';
 
 const LeadEditPage = () => {
@@ -44,6 +45,7 @@ const LeadEditPage = () => {
     contactName: '',
     contactMobile: '',
     stage: '',
+    productCategory: '',
     productRequirement: '',
     nextCallDate: '',
     currentStatus: '',
@@ -58,7 +60,9 @@ const LeadEditPage = () => {
   const [states, setStates] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [leadStages, setLeadStages] = useState([]);
+  const [productCategories, setProductCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]); // Store all products for filtering
   const [users, setUsers] = useState([]);
   const [campaigns, setCampaigns] = useState([]);
 
@@ -66,6 +70,7 @@ const LeadEditPage = () => {
     states: false,
     districts: false,
     stages: false,
+    productCategories: false,
     products: false,
     users: false,
     campaigns: false,
@@ -102,10 +107,36 @@ const LeadEditPage = () => {
     }
   }, [formData.state]);
 
+  // Filter products when product category changes
+  useEffect(() => {
+    if (formData.productCategory) {
+      const filtered = allProducts.filter(
+        (product) => product.categoryId === formData.productCategory,
+      );
+      setProducts(filtered);
+    } else {
+      setProducts(allProducts);
+    }
+  }, [formData.productCategory, allProducts]);
+
   const loadLead = async () => {
     try {
       setLoading(true);
       const response = await leadService.getLeadById(id);
+
+      const productReqId =
+        typeof response.productRequirement === 'object' && response.productRequirement
+          ? response.productRequirement._id
+          : response.productRequirement || '';
+
+      // Find the category of the selected product
+      let productCategoryId = '';
+      if (productReqId) {
+        const selectedProduct = allProducts.find((p) => p._id === productReqId);
+        if (selectedProduct) {
+          productCategoryId = selectedProduct.categoryId;
+        }
+      }
 
       setFormData({
         companyName: response.companyName || '',
@@ -118,21 +149,16 @@ const LeadEditPage = () => {
           typeof response.stage === 'object' && response.stage
             ? response.stage._id
             : response.stage || '',
-        productRequirement:
-          typeof response.productRequirement === 'object' && response.productRequirement
-            ? response.productRequirement._id
-            : response.productRequirement || '',
+        productCategory: productCategoryId,
+        productRequirement: productReqId,
         nextCallDate: response.nextCallDate ? response.nextCallDate.split('T')[0] : '',
         currentStatus: response.currentStatus || '',
         assignTo:
           typeof response.assignTo === 'object' && response.assignTo
             ? response.assignTo._id
             : response.assignTo || '',
-        contributor: Array.isArray(response.contributor)
-          ? response.contributor
-              .map((c) => (typeof c === 'object' && c ? c._id : c))
-              .filter(Boolean)
-          : [],
+        // Contributors field always starts empty - users must select manually each time
+        contributor: [],
         campaignId:
           typeof response.campaignId === 'object' && response.campaignId
             ? response.campaignId._id
@@ -168,11 +194,24 @@ const LeadEditPage = () => {
       setLoadingStates((prev) => ({ ...prev, stages: false }));
     }
 
+    // Fetch product categories
+    try {
+      setLoadingStates((prev) => ({ ...prev, productCategories: true }));
+      const categoriesData = await productService.getAllCategories();
+      setProductCategories(Array.isArray(categoriesData) ? categoriesData : []);
+    } catch (error) {
+      console.error('Failed to fetch product categories:', error);
+    } finally {
+      setLoadingStates((prev) => ({ ...prev, productCategories: false }));
+    }
+
     // Fetch products
     try {
       setLoadingStates((prev) => ({ ...prev, products: true }));
       const productsData = await productService.getAllProducts();
-      setProducts(Array.isArray(productsData) ? productsData : []);
+      const productsList = Array.isArray(productsData) ? productsData : [];
+      setAllProducts(productsList);
+      setProducts(productsList);
     } catch (error) {
       console.error('Failed to fetch products:', error);
     } finally {
@@ -226,6 +265,12 @@ const LeadEditPage = () => {
         district: '',
         city: '',
       }));
+    } else if (field === 'productCategory') {
+      setFormData((prev) => ({
+        ...prev,
+        productCategory: newValue,
+        productRequirement: '', // Reset product selection when category changes
+      }));
     } else {
       setFormData((prev) => ({
         ...prev,
@@ -241,11 +286,10 @@ const LeadEditPage = () => {
     }
   };
 
-  const handleContributorChange = (e) => {
-    const selectedOptions = Array.from(e.target.selectedOptions, (option) => option.value);
+  const handleContributorChange = (selectedValues) => {
     setFormData((prev) => ({
       ...prev,
-      contributor: selectedOptions,
+      contributor: selectedValues,
     }));
     if (errors.contributor) {
       setErrors((prev) => ({
@@ -484,6 +528,23 @@ const LeadEditPage = () => {
               />
 
               <FormField
+                id="productCategory"
+                type="select"
+                label="Product Category"
+                value={formData.productCategory}
+                onChange={handleInputChange('productCategory')}
+                icon={Tag}
+                error={errors.productCategory}
+                placeholder="Select category (optional)"
+                options={productCategories.map((category) => ({
+                  value: category._id,
+                  label: category.name,
+                }))}
+                disabled={loadingStates.productCategories}
+                size="default"
+              />
+
+              <FormField
                 id="productRequirement"
                 type="select"
                 label="Product Requirement"
@@ -491,12 +552,14 @@ const LeadEditPage = () => {
                 onChange={handleInputChange('productRequirement')}
                 icon={Package}
                 error={errors.productRequirement}
-                placeholder="Select product (optional)"
+                placeholder={
+                  formData.productCategory ? 'Select product (optional)' : 'Select category first'
+                }
                 options={products.map((product) => ({
                   value: product._id,
                   label: product.name,
                 }))}
-                disabled={loadingStates.products}
+                disabled={loadingStates.products || !formData.productCategory}
                 size="default"
               />
 
@@ -570,27 +633,19 @@ const LeadEditPage = () => {
                 size="default"
               />
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contributors (Optional)
-                </label>
-                <select
-                  id="contributor"
-                  multiple
-                  value={formData.contributor}
-                  onChange={handleContributorChange}
-                  disabled={loadingStates.users}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm disabled:bg-gray-50 disabled:cursor-not-allowed"
-                  size="4"
-                >
-                  {users.map((user) => (
-                    <option key={user._id} value={user._id}>
-                      {user.fullName || user.name || user.email}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple</p>
-              </div>
+              <MultiSelect
+                label="Contributors (Optional)"
+                placeholder="Select contributors..."
+                icon={Users}
+                value={formData.contributor}
+                onChange={handleContributorChange}
+                options={users.map((user) => ({
+                  value: user._id,
+                  label: user.fullName || user.name || user.email,
+                }))}
+                disabled={loadingStates.users}
+                error={errors.contributor}
+              />
             </div>
           </CardContent>
         </Card>

@@ -17,11 +17,14 @@ import {
   Building2,
   Package,
   Megaphone,
+  Eye,
 } from 'lucide-react';
 import GenericDeleteModal from '../components/modals/GenericDeleteModal';
 import LeadCard from '../components/leads/LeadCard';
+import CanAccess from '../components/CanAccess';
 import { leadService } from '../api/leadService';
 import { useNavigate } from 'react-router-dom';
+import { PERMISSIONS } from '../utils/permissions';
 
 const Leads = () => {
   const navigate = useNavigate();
@@ -164,10 +167,12 @@ const Leads = () => {
               : 'Manage your sales leads and track their progress'}
           </p>
         </div>
-        <Button onClick={() => navigate('/leads/new')} className="h-9 sm:h-10">
-          <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-          <span className="button-text">Add Lead</span>
-        </Button>
+        <CanAccess permission={PERMISSIONS.LEADS_CREATE}>
+          <Button onClick={() => navigate('/leads/new')} className="h-9 sm:h-10">
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+            <span className="button-text">Add Lead</span>
+          </Button>
+        </CanAccess>
       </div>
 
       {/* Error Display */}
@@ -227,13 +232,13 @@ const Leads = () => {
                   <tr>
                     <th className="px-6 py-3 text-left table-header">Company</th>
                     <th className="px-6 py-3 text-left table-header">Contact Info</th>
-                    <th className="px-6 py-3 text-left table-header">Location</th>
+                    {/* <th className="px-6 py-3 text-left table-header">Location</th> */}
                     <th className="px-6 py-3 text-left table-header">Stage</th>
                     <th className="px-6 py-3 text-left table-header">Product</th>
                     <th className="px-6 py-3 text-left table-header">Campaign</th>
                     <th className="px-6 py-3 text-left table-header">Next Call</th>
                     <th className="px-6 py-3 text-left table-header">Assigned To</th>
-                    <th className="px-6 py-3 text-right table-header">Actions</th>
+                    <th className="px-6 py-3 text-right table-header w-32">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -258,18 +263,19 @@ const Leads = () => {
                     return (
                       <tr
                         key={lead._id}
-                        className="hover:bg-gray-50 transition-colors duration-150"
+                        className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                        onClick={() => navigate(`/leads/${lead._id}`)}
                       >
                         <td className="px-6 py-4">
                           <div className="flex items-center space-x-2">
                             <Building2 className="h-4 w-4 text-blue-500 flex-shrink-0" />
                             <div>
                               <div className="table-cell font-medium">{lead.companyName}</div>
-                              {lead.currentStatus && (
+                              {/* {lead.currentStatus && (
                                 <div className="table-cell-secondary text-xs">
                                   {lead.currentStatus}
                                 </div>
-                              )}
+                              )} */}
                             </div>
                           </div>
                         </td>
@@ -284,7 +290,7 @@ const Leads = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4">
+                        {/* <td className="px-6 py-4">
                           <div className="flex items-center text-sm text-gray-900">
                             <MapPin className="h-3 w-3 mr-1 text-gray-400" />
                             <div>
@@ -295,7 +301,7 @@ const Leads = () => {
                               <div className="text-xs text-gray-500">{lead.state}</div>
                             </div>
                           </div>
-                        </td>
+                        </td> */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <Badge variant={getStageVariant(lead.stage)} className="text-xs">
                             {stageName}
@@ -339,22 +345,44 @@ const Leads = () => {
                             )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="table-actions">
-                            <button
-                              onClick={() => navigate(`/leads/${lead._id}/edit`)}
-                              className="action-btn action-btn-primary"
-                              title="Edit lead"
-                            >
-                              <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                            </button>
-                            <button
-                              onClick={() => handleOpenDeleteModal(lead)}
-                              className="action-btn action-btn-danger"
-                              title="Delete lead"
-                            >
-                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                            </button>
+                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                          <div className="table-actions justify-end">
+                            <CanAccess permission={PERMISSIONS.LEADS_READ}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/leads/${lead._id}`);
+                                }}
+                                className="action-btn action-btn-info"
+                                title="View details"
+                              >
+                                <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
+                              </button>
+                            </CanAccess>
+                            <CanAccess permission={PERMISSIONS.LEADS_UPDATE}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/leads/${lead._id}/edit`);
+                                }}
+                                className="action-btn action-btn-primary"
+                                title="Edit lead"
+                              >
+                                <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                              </button>
+                            </CanAccess>
+                            <CanAccess permission={PERMISSIONS.LEADS_DELETE}>
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleOpenDeleteModal(lead);
+                                }}
+                                className="action-btn action-btn-danger"
+                                title="Delete lead"
+                              >
+                                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                              </button>
+                            </CanAccess>
                           </div>
                         </td>
                       </tr>

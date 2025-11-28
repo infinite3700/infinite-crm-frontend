@@ -5,6 +5,8 @@ import { Badge } from '../components/ui/badge';
 import { Megaphone, Plus, Search, Edit, Trash2, Calendar } from 'lucide-react';
 import GenericDeleteModal from '../components/modals/GenericDeleteModal';
 import CampaignFormModal from '../components/modals/CampaignFormModal';
+import CanAccess from '../components/CanAccess';
+import { PERMISSIONS } from '../utils/permissions';
 import { settingsService } from '../api/settingsService';
 
 const Campaigns = () => {
@@ -52,7 +54,7 @@ const Campaigns = () => {
     (campaign) =>
       campaign.campaignName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       campaign.campaignDescription?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      campaign.status?.toLowerCase().includes(searchTerm.toLowerCase())
+      campaign.status?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Form modal handlers
@@ -206,10 +208,12 @@ const Campaigns = () => {
                 <span className="card-title">Campaigns Management</span>
               </CardTitle>
             </div>
-            <Button onClick={() => handleOpenFormModal()} className="h-9 sm:h-10">
-              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-              <span className="button-text">Add Campaign</span>
-            </Button>
+            <CanAccess permission={PERMISSIONS.CAMPAIGNS_CREATE}>
+              <Button onClick={() => handleOpenFormModal()} className="h-9 sm:h-10">
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                <span className="button-text">Add Campaign</span>
+              </Button>
+            </CanAccess>
           </div>
         </CardHeader>
         <CardContent className="table-container">
@@ -237,7 +241,10 @@ const Campaigns = () => {
                       </div>
                     </td>
                     <td className="table-cell-responsive">
-                      <div className="table-cell-secondary max-w-xs truncate" title={campaign.campaignDescription}>
+                      <div
+                        className="table-cell-secondary max-w-xs truncate"
+                        title={campaign.campaignDescription}
+                      >
                         {campaign.campaignDescription}
                       </div>
                     </td>
@@ -245,31 +252,39 @@ const Campaigns = () => {
                       <div className="flex items-center space-x-1 text-sm text-gray-600">
                         <Calendar className="h-3 w-3" />
                         <span className="whitespace-nowrap">
-                          {formatDate(campaign.campaignStartDate)} - {formatDate(campaign.campaignEndDate)}
+                          {formatDate(campaign.campaignStartDate)} -{' '}
+                          {formatDate(campaign.campaignEndDate)}
                         </span>
                       </div>
                     </td>
                     <td className="table-cell-responsive">
-                      <Badge variant={getStatusVariant(campaign.status)} className="responsive-badge">
+                      <Badge
+                        variant={getStatusVariant(campaign.status)}
+                        className="responsive-badge"
+                      >
                         {campaign.status || 'N/A'}
                       </Badge>
                     </td>
                     <td className="table-cell-responsive text-right">
-                      <div className="table-actions">
-                        <button
-                          onClick={() => handleOpenFormModal(campaign)}
-                          className="action-btn action-btn-primary"
-                          title="Edit Campaign"
-                        >
-                          <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleOpenDeleteModal(campaign)}
-                          className="action-btn action-btn-danger"
-                          title="Delete Campaign"
-                        >
-                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                        </button>
+                      <div className="table-actions justify-end">
+                        <CanAccess permission={PERMISSIONS.CAMPAIGNS_UPDATE}>
+                          <button
+                            onClick={() => handleOpenFormModal(campaign)}
+                            className="action-btn action-btn-primary"
+                            title="Edit Campaign"
+                          >
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                          </button>
+                        </CanAccess>
+                        <CanAccess permission={PERMISSIONS.CAMPAIGNS_DELETE}>
+                          <button
+                            onClick={() => handleOpenDeleteModal(campaign)}
+                            className="action-btn action-btn-danger"
+                            title="Delete Campaign"
+                          >
+                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                          </button>
+                        </CanAccess>
                       </div>
                     </td>
                   </tr>
@@ -285,11 +300,7 @@ const Campaigns = () => {
                 {searchTerm ? 'No campaigns found matching your search' : 'No campaigns yet'}
               </p>
               {!searchTerm && (
-                <Button
-                  onClick={() => handleOpenFormModal()}
-                  variant="outline"
-                  className="mt-4"
-                >
+                <Button onClick={() => handleOpenFormModal()} variant="outline" className="mt-4">
                   <Plus className="h-4 w-4 mr-2" />
                   Create Your First Campaign
                 </Button>
@@ -325,4 +336,3 @@ const Campaigns = () => {
 };
 
 export default Campaigns;
-
