@@ -57,6 +57,7 @@ export const API_ENDPOINTS = {
         GET_ALL: '/leads',
         GET_FOLLOW_UP: '/leads/follow-up',
         GET_COUNT: '/leads/count',
+        MY_LEAD: '/leads/my-leads',
         GET_BY_ID: (id) => `/leads/${id}`,
         CREATE: '/leads',
         UPDATE: (id) => `/leads/${id}`,
