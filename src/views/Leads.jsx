@@ -1,38 +1,41 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import { Badge } from '../components/ui/badge';
-import { Card, CardContent } from '../components/ui/card';
-import { Button } from '../components/ui/button';
 import {
-  Users,
+  Building2,
+  Calendar,
+  Edit,
+  Eye,
+  Megaphone,
+  Package,
+  Phone,
   Plus,
   Search,
-  Edit,
   Trash2,
-  Phone,
-  Calendar,
-  MapPin,
-  Tag,
-  UserPlus,
-  Building2,
-  Package,
-  Megaphone,
-  Eye,
+  Users
 } from 'lucide-react';
-import GenericDeleteModal from '../components/modals/GenericDeleteModal';
-import LeadCard from '../components/leads/LeadCard';
-import CanAccess from '../components/CanAccess';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { leadService } from '../api/leadService';
-import { useNavigate } from 'react-router-dom';
+import CanAccess from '../components/CanAccess';
+import LeadCard from '../components/leads/LeadCard';
+import GenericDeleteModal from '../components/modals/GenericDeleteModal';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Card, CardContent } from '../components/ui/card';
+import { selectCurrentUser } from '../store/authSlice';
 import { PERMISSIONS } from '../utils/permissions';
 
 const Leads = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const currentUser = useSelector(selectCurrentUser);
   const [searchTerm, setSearchTerm] = useState('');
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   // Check if we're in follow-up mode
   const isFollowUpMode = location.pathname === '/leads/follow-up';
@@ -60,7 +63,6 @@ const Leads = () => {
       setLeads(Array.isArray(response) ? response : []);
     } catch (err) {
       setError(err.message || 'Failed to load leads');
-      console.error('Error loading leads:', err);
     } finally {
       setLoading(false);
     }
@@ -81,6 +83,35 @@ const Leads = () => {
         lead.campaignId?.campaignName?.toLowerCase().includes(searchLower))
     );
   });
+
+  // Pagination calculations
+  const totalItems = filteredLeads.length;
+  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentLeads = filteredLeads.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  // Pagination handlers
+  const goToPage = (page) => {
+    setCurrentPage(page);
+  };
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   // Delete modal handlers
   const handleOpenDeleteModal = (lead) => {
@@ -107,7 +138,6 @@ const Leads = () => {
       handleCloseDeleteModal();
     } catch (err) {
       setError(err.message || 'Failed to delete lead');
-      console.error('Error deleting lead:', err);
     } finally {
       setDeleteModal((prev) => ({ ...prev, isLoading: false }));
     }
@@ -196,8 +226,8 @@ const Leads = () => {
 
       {/* Mobile Card View (visible on small screens) */}
       <div className="block lg:hidden space-y-3">
-        {filteredLeads.map((lead) => (
-          <LeadCard key={lead._id} lead={lead} onDelete={handleOpenDeleteModal} />
+        {currentLeads.map((lead) => (
+          <LeadCard key={lead._id} lead={lead} onDelete={handleOpenDeleteModal} currentUser={currentUser} />
         ))}
 
         {filteredLeads.length === 0 && (
@@ -242,7 +272,7 @@ const Leads = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredLeads.map((lead) => {
+                  {currentLeads.map((lead) => {
                     const stageName =
                       typeof lead.stage === 'object' && lead.stage
                         ? lead.stage.stage
@@ -367,6 +397,7 @@ const Leads = () => {
                                 }}
                                 className="action-btn action-btn-primary"
                                 title="Edit lead"
+                                disabled={lead.assignTo?._id !== currentUser?._id}
                               >
                                 <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                               </button>
@@ -379,6 +410,7 @@ const Leads = () => {
                                 }}
                                 className="action-btn action-btn-danger"
                                 title="Delete lead"
+                                disabled={lead.assignTo?._id !== currentUser?._id}
                               >
                                 <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                               </button>
@@ -411,6 +443,84 @@ const Leads = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+          <div className="flex justify-between flex-1 sm:hidden">
+            <button
+              onClick={goToPreviousPage}
+              disabled={currentPage === 1}
+              className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages}
+              className="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm text-gray-700">
+                Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{' '}
+                <span className="font-medium">{Math.min(indexOfLastItem, totalItems)}</span> of{' '}
+                <span className="font-medium">{totalItems}</span> results
+              </p>
+            </div>
+            <div>
+              <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                <button
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    if (totalPages <= 7) return true;
+                    if (page === 1 || page === totalPages) return true;
+                    if (Math.abs(page - currentPage) <= 2) return true;
+                    return false;
+                  })
+                  .map((page, index, array) => {
+                    const showEllipsis = index > 0 && page - array[index - 1] > 1;
+                    return (
+                      <div key={page} className="flex">
+                        {showEllipsis && (
+                          <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                            ...
+                          </span>
+                        )}
+                        <button
+                          onClick={() => goToPage(page)}
+                          className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                            currentPage === page
+                              ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                              : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </div>
+                    );
+                  })}
+                <button
+                  onClick={goToNextPage}
+                  disabled={currentPage === totalPages}
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Modal */}
       <GenericDeleteModal

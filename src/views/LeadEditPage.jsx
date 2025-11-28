@@ -88,8 +88,6 @@ const LeadEditPage = () => {
     if (!isEditMode && currentUser) {
       // Try different possible ID fields
       const userId = currentUser._id || currentUser.id;
-      console.log('Current user:', currentUser); // Debug log
-      console.log('Setting assignTo:', userId); // Debug log
 
       if (userId) {
         setFormData((prev) => ({
@@ -177,8 +175,8 @@ const LeadEditPage = () => {
       setLoadingStates((prev) => ({ ...prev, states: true }));
       const statesData = await settingsService.states.getEnums();
       setStates(Array.isArray(statesData.state) ? statesData.state : []);
-    } catch (error) {
-      console.error('Failed to fetch states:', error);
+    } catch {
+      // Error fetching states
     } finally {
       setLoadingStates((prev) => ({ ...prev, states: false }));
     }
@@ -188,8 +186,8 @@ const LeadEditPage = () => {
       setLoadingStates((prev) => ({ ...prev, stages: true }));
       const stagesData = await settingsService.leadStages.getAll();
       setLeadStages(Array.isArray(stagesData) ? stagesData : []);
-    } catch (error) {
-      console.error('Failed to fetch lead stages:', error);
+    } catch {
+      // Error fetching lead stages
     } finally {
       setLoadingStates((prev) => ({ ...prev, stages: false }));
     }
@@ -199,8 +197,8 @@ const LeadEditPage = () => {
       setLoadingStates((prev) => ({ ...prev, productCategories: true }));
       const categoriesData = await productService.getAllCategories();
       setProductCategories(Array.isArray(categoriesData) ? categoriesData : []);
-    } catch (error) {
-      console.error('Failed to fetch product categories:', error);
+    } catch {
+      // Error fetching product categories
     } finally {
       setLoadingStates((prev) => ({ ...prev, productCategories: false }));
     }
@@ -212,8 +210,8 @@ const LeadEditPage = () => {
       const productsList = Array.isArray(productsData) ? productsData : [];
       setAllProducts(productsList);
       setProducts(productsList);
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
+    } catch {
+      // Error fetching products
     } finally {
       setLoadingStates((prev) => ({ ...prev, products: false }));
     }
@@ -235,8 +233,8 @@ const LeadEditPage = () => {
       setLoadingStates((prev) => ({ ...prev, campaigns: true }));
       const campaignsData = await settingsService.campaigns.getAll();
       setCampaigns(Array.isArray(campaignsData) ? campaignsData : []);
-    } catch (error) {
-      console.error('Failed to fetch campaigns:', error);
+    } catch {
+      // Error fetching campaigns
     } finally {
       setLoadingStates((prev) => ({ ...prev, campaigns: false }));
     }

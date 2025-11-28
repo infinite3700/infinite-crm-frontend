@@ -1,28 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Card, CardContent } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Badge } from '../components/ui/badge';
 import {
   ArrowLeft,
   Building2,
-  User,
-  Phone,
-  Mail,
-  MapPin,
   Calendar,
-  Tag,
-  Package,
-  FileText,
-  UserPlus,
-  Users,
   Clock,
   Edit,
-  Trash2,
+  FileText,
+  MapPin,
   Megaphone,
+  Package,
+  Phone,
+  Trash2,
+  User,
+  UserPlus,
+  Users
 } from 'lucide-react';
-import GenericDeleteModal from '../components/modals/GenericDeleteModal';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { leadService } from '../api/leadService';
+import GenericDeleteModal from '../components/modals/GenericDeleteModal';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Card, CardContent } from '../components/ui/card';
 
 const LeadDetailPage = () => {
   const { id } = useParams();
@@ -49,8 +47,7 @@ const LeadDetailPage = () => {
       const response = await leadService.getLeadById(id);
       setLead(response);
     } catch (err) {
-      setError(err.message || 'Failed to load lead details');
-      console.error('Error loading lead:', err);
+      setError(err.message || 'Failed to load lead');
     } finally {
       setLoading(false);
     }

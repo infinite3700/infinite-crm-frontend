@@ -36,13 +36,12 @@ apiClient.interceptors.request.use(
 
         // Log requests in development
         if (import.meta.env.DEV) {
-            console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
+            // API request logging removed
         }
 
         return config;
     },
     (error) => {
-        console.error('❌ Request Error:', error);
         return Promise.reject(error);
     }
 );
@@ -52,7 +51,7 @@ apiClient.interceptors.response.use(
     (response) => {
         // Log successful responses in development
         if (import.meta.env.DEV) {
-            console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, response.status);
+            // API response logging removed
         }
 
         return response;
@@ -67,7 +66,7 @@ apiClient.interceptors.response.use(
 
             // Log the error in development
             if (import.meta.env.DEV) {
-                console.error(`❌ API Error: ${status}`, data);
+                // API error logging removed
             }
 
             // Extract error message from various possible response formats
@@ -76,12 +75,10 @@ apiClient.interceptors.response.use(
             // Handle different status codes
             switch (status) {
                 case 400:
-                    console.error('📝 Bad Request:', errorMessage || 'Invalid request data');
                     break;
 
                 case 401:
                     // Unauthorized - clear auth data and redirect to login
-                    console.warn('🔐 Authentication failed - redirecting to login');
                     tokenManager.removeToken();
                     userManager.removeUser();
 
@@ -93,31 +90,25 @@ apiClient.interceptors.response.use(
                     break;
 
                 case 403:
-                    console.error('🚫 Access forbidden');
                     errorMessage = errorMessage || 'Access forbidden';
                     break;
 
                 case 404:
-                    console.error('🔍 Resource not found');
                     errorMessage = errorMessage || 'Resource not found';
                     break;
 
                 case 409:
-                    console.error('⚠️ Conflict:', errorMessage || 'Resource conflict');
                     break;
 
                 case 422:
-                    console.error('📝 Validation errors:', data);
                     errorMessage = errorMessage || 'Validation failed';
                     break;
 
                 case 500:
-                    console.error('🔥 Server error');
                     errorMessage = errorMessage || 'Internal server error';
                     break;
 
                 default:
-                    console.error(`❌ HTTP ${status}:`, errorMessage || 'Unknown error');
                     errorMessage = errorMessage || `HTTP ${status} Error`;
             }
 
@@ -126,12 +117,10 @@ apiClient.interceptors.response.use(
 
         } else if (request) {
             // Request was made but no response received (network error)
-            console.error('🌐 Network Error:', message);
             return Promise.reject(new Error('Network error - please check your connection'));
 
         } else {
             // Something else happened in setting up the request
-            console.error('⚠️ Request Error:', message);
             return Promise.reject(new Error(message || 'Request failed'));
         }
     }

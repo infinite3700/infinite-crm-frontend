@@ -127,8 +127,8 @@ const PWAInstallPrompt = () => {
               });
             });
           })
-          .catch((error) => {
-            console.log('PWA: Service Worker registration failed:', error);
+          .catch(() => {
+            // Service Worker registration failed
           });
       });
     }

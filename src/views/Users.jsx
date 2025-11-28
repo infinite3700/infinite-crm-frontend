@@ -1,36 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import { AlertCircle, Edit, Loader2, Mail, Plus, Search, Trash2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  fetchUsers,
-  createUser,
-  updateUser,
-  deleteUser,
-  selectUsers,
-  selectUsersLoading,
-  selectUsersCreating,
-  selectUsersUpdating,
-  selectUsersDeleting,
-  selectUsersError,
-} from '../store/userSlice';
-import { selectIsAuthenticated } from '../store/authSlice';
-import AddUserModal from '../components/modals/AddUserModal';
-import EditUserModal from '../components/modals/EditUserModal';
-import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
 import CanAccess from '../components/CanAccess';
-import { PERMISSIONS } from '../utils/permissions';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
+import AddUserModal from '../components/modals/AddUserModal';
+import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
+import EditUserModal from '../components/modals/EditUserModal';
 import { Avatar, AvatarFallback } from '../components/ui/avatar';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Input } from '../components/ui/input';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from '../components/ui/table';
-import { Search, Plus, Mail, Loader2, AlertCircle, Edit, Trash2 } from 'lucide-react';
+import { selectIsAuthenticated } from '../store/authSlice';
+import {
+    createUser,
+    deleteUser,
+    fetchUsers,
+    selectUsers,
+    selectUsersCreating,
+    selectUsersDeleting,
+    selectUsersError,
+    selectUsersLoading,
+    selectUsersUpdating,
+    updateUser,
+} from '../store/userSlice';
+import { PERMISSIONS } from '../utils/permissions';
 
 const Users = () => {
   const dispatch = useDispatch();
@@ -59,10 +59,7 @@ const Users = () => {
       setIsAddUserModalOpen(false);
       // Refresh user list to get updated data with populated roles
       dispatch(fetchUsers());
-      console.log('User created successfully');
     } catch (error) {
-      console.error('Failed to create user:', error);
-      // Let the modal handle the error display
       throw error; // Re-throw to let the modal handle the error
     }
   };

@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Button } from '../ui/button';
-import { Badge } from '../ui/badge';
-import { MapPin, Plus, Search, Edit, Trash2, Globe, Building2, X } from 'lucide-react';
+import { Building2, Edit, Globe, Plus, Search, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { settingsService } from '../../api/settingsService';
 import GenericDeleteModal from '../modals/GenericDeleteModal';
 import GeographyDialog from '../modals/GeographyDialog';
-import { settingsService } from '../../api/settingsService';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 const GeographyTab = () => {
   const [activeSection, setActiveSection] = useState('states'); // 'states' or 'districts'
@@ -44,8 +44,7 @@ const GeographyTab = () => {
 
   // Debug state enums - Add a test to see current state
   useEffect(() => {
-    console.log('🔍 Current stateEnums value:', stateEnums);
-    console.log('🔍 stateEnumsLoading:', stateEnumsLoading);
+    // Debug logs removed
   }, [stateEnums, stateEnumsLoading]);
 
   // Fetch districts when state filter changes
@@ -59,15 +58,12 @@ const GeographyTab = () => {
   const fetchDistrictsByState = async (state) => {
     try {
       setDistrictsLoading(true);
-      console.log('🔄 Fetching districts for state:', state);
       
       const districtsResponse = await settingsService.states.getDistrictEnums(state);
-      console.log('✅ Districts response received:', districtsResponse);
       
       // Set the filtered districts from API
       setFilteredDistrictsFromAPI(Array.isArray(districtsResponse) ? districtsResponse : []);
     } catch (error) {
-      console.error('❌ Failed to fetch districts for state:', state, error);
       setError(`Failed to load districts for ${state === 'all' ? 'all states' : state}`);
     } finally {
       setDistrictsLoading(false);
@@ -81,36 +77,26 @@ const GeographyTab = () => {
       
       // Load states - new API returns array of objects with status and state
       const statesResponse = await settingsService.states.getAll();
-      console.log('✅ States response received:', statesResponse);
-      console.log('🔍 First state object structure:', statesResponse[0]);
-      console.log('🔍 Does first state have _id?', statesResponse[0]?._id);
       setStates(Array.isArray(statesResponse) ? statesResponse : []);
       
       // Load state enums for filtering
       try {
         setStateEnumsLoading(true);
-        console.log('🔄 Starting to fetch state enums...');
         const stateEnumsResponse = await settingsService.states.getEnums();
-        console.log('✅ State enums response received:', stateEnumsResponse);
         
         // The getEnums now returns { state: [array of state names] }
         const processedEnums = Array.isArray(stateEnumsResponse.state) ? stateEnumsResponse.state : [];
-        console.log('🔧 Processed state enums:', processedEnums);
         
         setStateEnums(processedEnums);
       } catch (enumError) {
-        console.error('❌ Failed to fetch state enums:', enumError);
         // Fallback to unique states from current data
         const uniqueStates = [...new Set((statesResponse || []).map(s => s.state))].filter(Boolean);
-        console.log('🔄 Fallback to unique states:', uniqueStates);
         setStateEnums(uniqueStates);
       } finally {
         setStateEnumsLoading(false);
-        console.log('✅ State enums loading completed');
       }
     } catch (err) {
       setError(err.message || 'Failed to load geographic data');
-      console.error('Error loading states and districts:', err);
     } finally {
       setLoading(false);
     }
@@ -185,7 +171,6 @@ const GeographyTab = () => {
       if (dialogState.type === 'state') {
         if (dialogState.editingItem) {
           // Update existing state using query parameter approach
-          console.log('🔍 Editing state item:', dialogState.editingItem);
           
           const updateData = {
             state: formData.state,
@@ -205,7 +190,6 @@ const GeographyTab = () => {
         // Handle district operations
         if (dialogState.editingItem) {
           // Update existing district using MongoDB ID approach
-          console.log('🔍 Editing district item:', dialogState.editingItem);
           
           if (!dialogState.editingItem._id) {
             throw new Error('Cannot update district: No ID found. Please refresh the page and try again.');
@@ -230,7 +214,6 @@ const GeographyTab = () => {
       handleCloseDialog();
     } catch (err) {
       setError(err.message || 'Failed to save geographic data');
-      console.error('Error saving geographic data:', err);
     } finally {
       setDialogState(prev => ({ ...prev, isSubmitting: false }));
     }
@@ -259,7 +242,6 @@ const GeographyTab = () => {
       setDeleteModal({ isOpen: false, type: '', item: null, isLoading: false });
     } catch (err) {
       setError(err.message || `Failed to delete ${deleteModal.type}`);
-      console.error(`Error deleting ${deleteModal.type}:`, err);
     } finally {
       setDeleteModal(prev => ({ ...prev, isLoading: false }));
     }
@@ -333,7 +315,6 @@ const GeographyTab = () => {
                 </option>
                 {!stateEnumsLoading && Array.isArray(stateEnums) && stateEnums.length > 0 ? 
                   stateEnums.map((state) => {
-                    console.log('Rendering state option:', state);
                     return (
                       <option key={state} value={state}>
                         {state}

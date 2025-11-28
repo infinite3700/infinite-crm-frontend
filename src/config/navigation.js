@@ -1,15 +1,15 @@
 import {
-    Home,
-    Users,
-    UserCheck,
-    Megaphone,
-    Settings,
-    PhoneCall,
-    User,
-    MapPin,
     GitBranch,
+    Home,
+    MapPin,
+    Megaphone,
     Package,
+    PhoneCall,
+    Settings,
     Shield,
+    User,
+    UserCheck,
+    Users,
 } from 'lucide-react';
 import { PERMISSIONS } from '../utils/permissions';
 
@@ -148,27 +148,22 @@ export const SETTINGS_TABS = [
  */
 export const filterNavigation = (navItems, user, hasPermissionFn) => {
     if (!user) {
-        console.log('[filterNavigation] No user provided');
         return [];
     }
 
-    console.log('[filterNavigation] Filtering navigation for user:', user?.name || user?.email);
-    console.log('[filterNavigation] User role:', user?.role);
+
 
     const filtered = navItems.filter((item) => {
         // If no permission specified, show the item (accessible to all authenticated users)
         if (!item.permission) {
-            console.log(`[filterNavigation] ✅ ${item.name} - No permission required`);
             return true;
         }
 
         // Check if user has the required permission
-        const hasAccess = hasPermissionFn(user, item.permission);
-        console.log(`[filterNavigation] ${hasAccess ? '✅' : '❌'} ${item.name} - Required: ${item.permission}, Has access: ${hasAccess}`);
+        const hasAccess = hasPermission(user, item.permission);
         return hasAccess;
     });
 
-    console.log('[filterNavigation] Filtered items:', filtered.map(item => item.name));
     return filtered;
 };
 
