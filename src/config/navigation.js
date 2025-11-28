@@ -11,7 +11,7 @@ import {
     UserCheck,
     Users,
 } from 'lucide-react';
-import { PERMISSIONS } from '../utils/permissions';
+import { PERMISSIONS, hasPermission } from '../utils/permissions';
 
 /**
  * Main Navigation Configuration
