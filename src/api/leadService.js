@@ -1,12 +1,12 @@
-import { apiMethods, crudService, authHelpers } from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
+import { apiMethods, crudService } from './apiClient';
 
 // Lead service using the common API client
 export const leadService = {
   // Get all leads with optional filters
   getAllLeads: async (params = {}) => {
     try {
-      const response = await apiMethods.get(API_ENDPOINTS.LEADS.GET_ALL, { params });
+      const response = await apiMethods.get(API_ENDPOINTS.LEADS.MY_LEAD, { params });
       
       // Normalize response structure
       return Array.isArray(response) ? response : response.leads || response.data || [];

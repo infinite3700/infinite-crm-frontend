@@ -15,16 +15,19 @@ import {
   Users
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router-dom';
 import { leadService } from '../api/leadService';
 import GenericDeleteModal from '../components/modals/GenericDeleteModal';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
+import { selectCurrentUser } from '../store/authSlice';
 
 const LeadDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const currentUser = useSelector(selectCurrentUser);
   
   const [lead, setLead] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -179,11 +182,12 @@ const LeadDetailPage = () => {
             onClick={handleDelete} 
             size="sm"
             className="text-red-600 hover:bg-red-50 h-8 px-3"
+            disabled={lead?.assignTo?._id !== currentUser?._id}
           >
             <Trash2 className="h-3.5 w-3.5 mr-1.5" />
             <span className="text-xs">Delete</span>
           </Button>
-          <Button onClick={handleEdit} size="sm" className="h-8 px-3">
+          <Button onClick={handleEdit} size="sm" className="h-8 px-3" disabled={lead?.assignTo?._id !== currentUser?._id}>
             <Edit className="h-3.5 w-3.5 mr-1.5" />
             <span className="text-xs">Edit</span>
           </Button>
