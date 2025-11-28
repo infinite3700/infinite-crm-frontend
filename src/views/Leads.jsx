@@ -50,16 +50,28 @@ const Leads = () => {
   // Load leads on component mount and when mode changes
   useEffect(() => {
     loadLeads();
-  }, [isFollowUpMode]);
+      console.info("currentuser", currentUser)
 
+  }, [isFollowUpMode]);
   const loadLeads = async () => {
     try {
       setLoading(true);
       setError(null);
       // Use different API based on mode
-      const response = isFollowUpMode
-        ? await leadService.getFollowUpLeads()
-        : await leadService.getAllLeads();
+      let response 
+      // isFollowUpMode
+      //   ? await leadService.getFollowUpLeads()
+      //   : await leadService.getAllLeads();
+      if(isFollowUpMode) {
+        response =  await leadService.getFollowUpLeads()
+      }
+      else if(currentUser?.role.name === 'Admin'){
+        response = await leadService.getAllLeads();
+      }
+      else {
+        response = await leadService.getMyLeads();
+      }
+
       setLeads(Array.isArray(response) ? response : []);
     } catch (err) {
       setError(err.message || 'Failed to load leads');
