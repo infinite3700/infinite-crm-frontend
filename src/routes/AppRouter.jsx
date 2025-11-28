@@ -12,16 +12,17 @@ import LeadEditPage from '../views/LeadEditPage';
 import Campaigns from '../views/Campaigns';
 import Settings from '../views/Settings';
 import ProfileEditPage from '../views/ProfileEditPage';
+import Unauthorized from '../views/Unauthorized';
 import Login from '../views/Login';
 
 // Public Route Component (redirects to dashboard if authenticated)
 const PublicRoute = ({ children }) => {
   const isAuthenticated = useSelector(selectIsAuthenticated);
-  
+
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
-  
+
   return children;
 };
 
@@ -37,14 +38,17 @@ const AppRouter = () => {
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}
-        <Route 
-          path="/login" 
+        <Route
+          path="/login"
           element={
             <PublicRoute>
               <Login />
             </PublicRoute>
-          } 
+          }
         />
+
+        {/* Unauthorized Page */}
+        <Route path="/unauthorized" element={<Unauthorized />} />
 
         {/* Protected Routes */}
         <Route
@@ -55,21 +59,31 @@ const AppRouter = () => {
             </ProtectedRoute>
           }
         >
-          {/* Nested routes inside AdminLayout */}
+          {/* Dashboard - Accessible to all authenticated users */}
           <Route index element={<Dashboard />} />
+
+          {/* Users Management */}
           <Route path="users" element={<Users />} />
+
+          {/* Leads Management */}
           <Route path="leads" element={<Leads />} />
           <Route path="leads/follow-up" element={<Leads />} />
           <Route path="leads/new" element={<LeadEditPage />} />
           <Route path="leads/:id" element={<LeadDetailPage />} />
           <Route path="leads/:id/edit" element={<LeadEditPage />} />
+
+          {/* Campaigns */}
           <Route path="campaigns" element={<Campaigns />} />
+
+          {/* Settings */}
           <Route path="settings" element={<Settings />} />
+
+          {/* Profile - Accessible to all authenticated users */}
           <Route path="settings/profile/edit" element={<ProfileEditPage />} />
-          
+
           {/* Catch all route for 404 */}
-          <Route 
-            path="*" 
+          <Route
+            path="*"
             element={
               <div className="flex items-center justify-center h-64">
                 <div className="text-center">
@@ -77,7 +91,7 @@ const AppRouter = () => {
                   <p className="text-muted-foreground">Page not found</p>
                 </div>
               </div>
-            } 
+            }
           />
         </Route>
       </Routes>

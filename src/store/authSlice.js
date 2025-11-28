@@ -14,12 +14,14 @@ export const login = createAsyncThunk(
 
             return {
                 user: {
+                    _id: response._id,
                     id: response._id,
                     username: response.username,
                     email: response.email,
                     name: response.name,
+                    fullName: response.fullName || response.name,
                     mobile: response.mobile,
-                    role: response.role,
+                    role: response.role, // Can be string or object with permissions
                     joinDate: response.joinDate
                 },
                 token: response.token
@@ -40,12 +42,14 @@ export const register = createAsyncThunk(
 
             return {
                 user: {
+                    _id: response._id,
                     id: response._id,
                     username: response.username,
                     email: response.email,
                     name: response.name,
+                    fullName: response.fullName || response.name,
                     mobile: response.mobile,
-                    role: response.role,
+                    role: response.role, // Can be string or object with permissions
                     joinDate: response.joinDate
                 }
             };
@@ -94,6 +98,7 @@ const initialState = {
     isAuthenticated: false,
     loading: false,
     error: null,
+    initialized: false, // Track if auth check has completed
 };
 
 const authSlice = createSlice({
@@ -127,6 +132,7 @@ const authSlice = createSlice({
                 state.user = action.payload.user;
                 state.token = action.payload.token;
                 state.isAuthenticated = true;
+                state.initialized = true;
                 state.error = null;
             })
             .addCase(login.rejected, (state, action) => {
@@ -157,6 +163,7 @@ const authSlice = createSlice({
                 state.user = null;
                 state.token = null;
                 state.isAuthenticated = false;
+                state.initialized = true;
                 state.error = null;
             })
             .addCase(logout.rejected, (state, action) => {
@@ -164,15 +171,23 @@ const authSlice = createSlice({
                 state.error = action.payload;
             })
             // Check auth cases
+            .addCase(checkAuth.pending, (state) => {
+                state.loading = true;
+                state.initialized = false;
+            })
             .addCase(checkAuth.fulfilled, (state, action) => {
                 state.user = action.payload.user;
                 state.token = action.payload.token;
                 state.isAuthenticated = true;
+                state.loading = false;
+                state.initialized = true;
             })
             .addCase(checkAuth.rejected, (state) => {
                 state.user = null;
                 state.token = null;
                 state.isAuthenticated = false;
+                state.loading = false;
+                state.initialized = true;
             });
     },
 });
@@ -184,5 +199,6 @@ export const selectCurrentUser = (state) => state.auth.user;
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
 export const selectAuthLoading = (state) => state.auth.loading;
 export const selectAuthError = (state) => state.auth.error;
+export const selectAuthInitialized = (state) => state.auth.initialized;
 
 export default authSlice.reducer;

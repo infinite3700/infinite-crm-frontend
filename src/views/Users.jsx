@@ -1,21 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { 
-  fetchUsers, 
+import {
+  fetchUsers,
   createUser,
   updateUser,
   deleteUser,
-  selectUsers, 
-  selectUsersLoading, 
+  selectUsers,
+  selectUsersLoading,
   selectUsersCreating,
   selectUsersUpdating,
   selectUsersDeleting,
-  selectUsersError 
+  selectUsersError,
 } from '../store/userSlice';
 import { selectIsAuthenticated } from '../store/authSlice';
 import AddUserModal from '../components/modals/AddUserModal';
 import EditUserModal from '../components/modals/EditUserModal';
 import ConfirmDeleteModal from '../components/modals/ConfirmDeleteModal';
+import CanAccess from '../components/CanAccess';
+import { PERMISSIONS } from '../utils/permissions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -28,15 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from '../components/ui/table';
-import { 
-  Search, 
-  Plus, 
-  Mail, 
-  Loader2,
-  AlertCircle,
-  Edit,
-  Trash2
-} from 'lucide-react';
+import { Search, Plus, Mail, Loader2, AlertCircle, Edit, Trash2 } from 'lucide-react';
 
 const Users = () => {
   const dispatch = useDispatch();
@@ -107,10 +101,11 @@ const Users = () => {
     }
   };
 
-  const filteredUsers = users.filter(user =>
-    (user.fullName || user.name)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (user.role?.name || user.role)?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) =>
+      (user.fullName || user.name)?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (user.role?.name || user.role)?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   // Show loading state if not authenticated yet
@@ -142,10 +137,7 @@ const Users = () => {
         <div className="flex items-center space-x-2 text-destructive">
           <AlertCircle className="h-6 w-6" />
           <span>
-            {error.includes('Authentication') 
-              ? 'Please log in to view users' 
-              : `Error: ${error}`
-            }
+            {error.includes('Authentication') ? 'Please log in to view users' : `Error: ${error}`}
           </span>
         </div>
       </div>
@@ -157,20 +149,18 @@ const Users = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="page-title">
-            Users
-          </h1>
-          <p className="page-subtitle hidden sm:block">
-            Manage and view all users in your system
-          </p>
+          <h1 className="page-title">Users</h1>
+          <p className="page-subtitle hidden sm:block">Manage and view all users in your system</p>
         </div>
-        <Button 
-          className="w-full sm:w-auto btn-gradient shadow-medium hover:shadow-large h-10 sm:h-auto"
-          onClick={() => setIsAddUserModalOpen(true)}
-        >
-          <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-          <span className="button-text">Add User</span>
-        </Button>
+        <CanAccess permission={PERMISSIONS.USERS_CREATE}>
+          <Button
+            className="w-full sm:w-auto btn-gradient shadow-medium hover:shadow-large h-10 sm:h-auto"
+            onClick={() => setIsAddUserModalOpen(true)}
+          >
+            <Plus className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="button-text">Add User</span>
+          </Button>
+        </CanAccess>
       </div>
 
       {/* Search and Filters - Mobile Optimized */}
@@ -208,15 +198,26 @@ const Users = () => {
             <Table>
               <TableHeader>
                 <TableRow className="bg-gray-50/50 hover:bg-gray-50/50 border-b">
-                  <TableHead className="w-[250px] sm:w-[300px] table-header px-2 sm:px-6 py-2 sm:py-3">Name</TableHead>
-                  <TableHead className="hidden md:table-cell table-header px-3 sm:px-6 py-2 sm:py-3">Email</TableHead>
-                  <TableHead className="hidden lg:table-cell table-header px-3 sm:px-6 py-2 sm:py-3">Role</TableHead>
-                  <TableHead className="w-[80px] sm:w-[100px] table-header px-2 sm:px-6 py-2 sm:py-3">Actions</TableHead>
+                  <TableHead className="w-[250px] sm:w-[300px] table-header px-2 sm:px-6 py-2 sm:py-3">
+                    Name
+                  </TableHead>
+                  <TableHead className="hidden md:table-cell table-header px-3 sm:px-6 py-2 sm:py-3">
+                    Email
+                  </TableHead>
+                  <TableHead className="hidden lg:table-cell table-header px-3 sm:px-6 py-2 sm:py-3">
+                    Role
+                  </TableHead>
+                  <TableHead className="w-[80px] sm:w-[100px] table-header px-2 sm:px-6 py-2 sm:py-3">
+                    Actions
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user) => (
-                  <TableRow key={user._id} className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 group">
+                  <TableRow
+                    key={user._id}
+                    className="hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 group"
+                  >
                     <TableCell className="px-2 sm:px-6 py-2 sm:py-4">
                       <div className="flex items-center space-x-2 sm:space-x-3">
                         <Avatar className="h-6 w-6 sm:h-12 sm:w-12 shadow-soft group-hover:shadow-medium transition-shadow">
@@ -226,7 +227,9 @@ const Users = () => {
                         </Avatar>
                         <div className="min-w-0 flex-1">
                           <div className="table-cell truncate">{user.fullName || user.name}</div>
-                          <div className="md:hidden text-[10px] text-gray-500 truncate">{user.email}</div>
+                          <div className="md:hidden text-[10px] text-gray-500 truncate">
+                            {user.email}
+                          </div>
                         </div>
                       </div>
                     </TableCell>
@@ -238,32 +241,41 @@ const Users = () => {
                     </TableCell>
                     <TableCell className="hidden lg:table-cell px-3 sm:px-6 py-3 sm:py-4">
                       <div>
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                          (user.role?.name || user.role) === 'Admin' ? 'bg-red-100 text-red-800' :
-                          (user.role?.name || user.role) === 'Manager' ? 'bg-yellow-100 text-yellow-800' :
-                          (user.role?.name || user.role) === 'Employee' ? 'bg-green-100 text-green-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
+                            (user.role?.name || user.role) === 'Admin'
+                              ? 'bg-red-100 text-red-800'
+                              : (user.role?.name || user.role) === 'Manager'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : (user.role?.name || user.role) === 'Employee'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
                           {user.role?.name || user.role || 'User'}
                         </span>
                       </div>
                     </TableCell>
-                    <TableCell className="px-2 sm:px-6 py-2 sm:py-4">
-                      <div className="table-actions">
-                        <button
-                          onClick={() => handleEditUser(user)}
-                          className="action-btn action-btn-primary"
-                          title="Edit user"
-                        >
-                          <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteUser(user)}
-                          className="action-btn action-btn-danger"
-                          title="Delete user"
-                        >
-                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
-                        </button>
+                    <TableCell className="px-2 sm:px-6 py-2 sm:py-4 text-right">
+                      <div className="table-actions justify-end">
+                        <CanAccess permission={PERMISSIONS.USERS_UPDATE}>
+                          <button
+                            onClick={() => handleEditUser(user)}
+                            className="action-btn action-btn-primary"
+                            title="Edit user"
+                          >
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
+                          </button>
+                        </CanAccess>
+                        <CanAccess permission={PERMISSIONS.USERS_DELETE}>
+                          <button
+                            onClick={() => handleDeleteUser(user)}
+                            className="action-btn action-btn-danger"
+                            title="Delete user"
+                          >
+                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
+                          </button>
+                        </CanAccess>
                       </div>
                     </TableCell>
                   </TableRow>
