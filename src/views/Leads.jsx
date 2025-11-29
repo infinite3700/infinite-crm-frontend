@@ -1,5 +1,4 @@
 import {
-  Building2,
   Calendar,
   Edit,
   Eye,
@@ -256,7 +255,7 @@ const Leads = () => {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-3 text-left table-header">Company</th>
+                    {/* <th className="px-6 py-3 text-left table-header">Company</th> */}
                     <th className="px-6 py-3 text-left table-header">Contact Info</th>
                     {/* <th className="px-6 py-3 text-left table-header">Location</th> */}
                     <th className="px-6 py-3 text-left table-header">Stage</th>
@@ -292,19 +291,14 @@ const Leads = () => {
                         className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
                         onClick={() => navigate(`/leads/${lead._id}`)}
                       >
-                        <td className="px-6 py-4">
+                        {/* <td className="px-6 py-4">
                           <div className="flex items-center space-x-2">
                             <Building2 className="h-4 w-4 text-blue-500 flex-shrink-0" />
                             <div>
                               <div className="table-cell font-medium">{lead.companyName}</div>
-                              {/* {lead.currentStatus && (
-                                <div className="table-cell-secondary text-xs">
-                                  {lead.currentStatus}
-                                </div>
-                              )} */}
                             </div>
                           </div>
-                        </td>
+                        </td> */}
                         <td className="px-6 py-4">
                           <div>
                             <div className="table-cell">{lead.contactName}</div>
