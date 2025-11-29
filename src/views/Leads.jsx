@@ -12,7 +12,6 @@ import {
   Users
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { leadService } from '../api/leadService';
 import CanAccess from '../components/CanAccess';
@@ -21,13 +20,11 @@ import GenericDeleteModal from '../components/modals/GenericDeleteModal';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
-import { selectCurrentUser } from '../store/authSlice';
 import { PERMISSIONS } from '../utils/permissions';
 
 const Leads = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const currentUser = useSelector(selectCurrentUser);
   const [searchTerm, setSearchTerm] = useState('');
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -50,28 +47,15 @@ const Leads = () => {
   // Load leads on component mount and when mode changes
   useEffect(() => {
     loadLeads();
-      console.info("currentuser", currentUser)
-
   }, [isFollowUpMode]);
   const loadLeads = async () => {
     try {
       setLoading(true);
       setError(null);
       // Use different API based on mode
-      let response 
-      // isFollowUpMode
-      //   ? await leadService.getFollowUpLeads()
-      //   : await leadService.getAllLeads();
-      if(isFollowUpMode) {
-        response =  await leadService.getFollowUpLeads()
-      }
-      else if(currentUser?.role.name === 'Admin'){
-        response = await leadService.getAllLeads();
-      }
-      else {
-        response = await leadService.getMyLeads();
-      }
-
+      const response = isFollowUpMode
+        ? await leadService.getFollowUpLeads()
+        : await leadService.getAllLeads();
       setLeads(Array.isArray(response) ? response : []);
     } catch (err) {
       setError(err.message || 'Failed to load leads');
@@ -239,7 +223,7 @@ const Leads = () => {
       {/* Mobile Card View (visible on small screens) */}
       <div className="block lg:hidden space-y-3">
         {currentLeads.map((lead) => (
-          <LeadCard key={lead._id} lead={lead} onDelete={handleOpenDeleteModal} currentUser={currentUser} />
+          <LeadCard key={lead._id} lead={lead} onDelete={handleOpenDeleteModal} />
         ))}
 
         {filteredLeads.length === 0 && (
@@ -409,7 +393,6 @@ const Leads = () => {
                                 }}
                                 className="action-btn action-btn-primary"
                                 title="Edit lead"
-                                disabled={lead.assignTo?._id !== currentUser?._id}
                               >
                                 <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                               </button>
@@ -422,7 +405,6 @@ const Leads = () => {
                                 }}
                                 className="action-btn action-btn-danger"
                                 title="Delete lead"
-                                disabled={lead.assignTo?._id !== currentUser?._id}
                               >
                                 <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                               </button>

@@ -14,7 +14,7 @@ import { PERMISSIONS } from '../../utils/permissions';
 import CanAccess from '../CanAccess';
 import { Badge } from '../ui/badge';
 
-const LeadCard = ({ lead, onDelete, currentUser }) => {
+const LeadCard = ({ lead, onDelete }) => {
   const navigate = useNavigate();
 
   // Format date for display
@@ -190,7 +190,6 @@ const LeadCard = ({ lead, onDelete, currentUser }) => {
                 onClick={handleEdit}
                 className="p-1.5 text-gray-600 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors"
                 title="Edit"
-                disabled={lead.assignTo?._id !== currentUser?._id}
               >
                 <Edit className="h-3.5 w-3.5" />
               </button>
@@ -200,7 +199,6 @@ const LeadCard = ({ lead, onDelete, currentUser }) => {
                 onClick={handleDelete}
                 className="p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 rounded transition-colors"
                 title="Delete"
-                disabled={lead.assignTo?._id !== currentUser?._id}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
