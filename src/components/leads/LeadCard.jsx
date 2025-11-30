@@ -125,13 +125,15 @@ const LeadCard = ({ lead, onDelete }) => {
             >
               {stageName}
             </Badge>
-            <button
-              onClick={handleViewDetails}
-              className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-              title="View Details"
-            >
-              <Eye className="h-3.5 w-3.5" />
-            </button>
+            <CanAccess permission={PERMISSIONS.LEADS_READ}>
+              <button
+                onClick={handleViewDetails}
+                className="p-1 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                title="View Details"
+              >
+                <Eye className="h-3.5 w-3.5" />
+              </button>
+            </CanAccess>
           </div>
         </div>
 
