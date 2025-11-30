@@ -1,31 +1,33 @@
 import {
-    ArrowLeft,
-    Building2,
-    Calendar,
-    Clock,
-    Edit,
-    FileText,
-    MapPin,
-    Megaphone,
-    Package,
-    Phone,
-    Trash2,
-    User,
-    UserPlus,
-    Users
+  ArrowLeft,
+  Building2,
+  Calendar,
+  Clock,
+  Edit,
+  FileText,
+  MapPin,
+  Megaphone,
+  Package,
+  Phone,
+  Trash2,
+  User,
+  UserPlus,
+  Users,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { leadService } from '../api/leadService';
+import CanAccess from '../components/CanAccess';
 import GenericDeleteModal from '../components/modals/GenericDeleteModal';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent } from '../components/ui/card';
+import { PERMISSIONS } from '../utils/permissions';
 
 const LeadDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [lead, setLead] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -174,19 +176,23 @@ const LeadDetailPage = () => {
           </div>
         </div>
         <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            onClick={handleDelete} 
-            size="sm"
-            className="text-red-600 hover:bg-red-50 h-8 px-3"
-          >
-            <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-            <span className="text-xs">Delete</span>
-          </Button>
-          <Button onClick={handleEdit} size="sm" className="h-8 px-3">
-            <Edit className="h-3.5 w-3.5 mr-1.5" />
-            <span className="text-xs">Edit</span>
-          </Button>
+          <CanAccess permission={PERMISSIONS.LEADS_DELETE}>
+            <Button
+              variant="outline"
+              onClick={handleDelete}
+              size="sm"
+              className="text-red-600 hover:bg-red-50 h-8 px-3"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1.5" />
+              <span className="text-xs">Delete</span>
+            </Button>
+          </CanAccess>
+          <CanAccess permission={PERMISSIONS.LEADS_UPDATE}>
+            <Button onClick={handleEdit} size="sm" className="h-8 px-3">
+              <Edit className="h-3.5 w-3.5 mr-1.5" />
+              <span className="text-xs">Edit</span>
+            </Button>
+          </CanAccess>
         </div>
       </div>
 
@@ -204,7 +210,9 @@ const LeadDetailPage = () => {
               <Building2 className="h-5 w-5 text-blue-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <h2 className="text-xl font-bold text-gray-900 mb-1.5 leading-tight">{lead.companyName}</h2>
+              <h2 className="text-xl font-bold text-gray-900 mb-1.5 leading-tight">
+                {lead.companyName}
+              </h2>
               <Badge variant={getStageVariant(lead.stage)} className="text-xs">
                 {stageName}
               </Badge>
@@ -235,7 +243,7 @@ const LeadDetailPage = () => {
                 <p className="text-sm font-medium text-gray-900">{lead.contactName}</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-2">
               <Phone className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
@@ -294,11 +302,12 @@ const LeadDetailPage = () => {
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-500">Campaign</p>
                     <p className="text-sm font-medium text-gray-900">{campaignName}</p>
-                    {typeof lead.campaignId === 'object' && lead.campaignId?.campaignDescription && (
-                      <p className="text-xs text-gray-600 mt-0.5">
-                        {lead.campaignId.campaignDescription}
-                      </p>
-                    )}
+                    {typeof lead.campaignId === 'object' &&
+                      lead.campaignId?.campaignDescription && (
+                        <p className="text-xs text-gray-600 mt-0.5">
+                          {lead.campaignId.campaignDescription}
+                        </p>
+                      )}
                     {typeof lead.campaignId === 'object' && lead.campaignId?.status && (
                       <Badge variant="secondary" className="text-[10px] mt-1">
                         {lead.campaignId.status}
@@ -313,7 +322,9 @@ const LeadDetailPage = () => {
                   <Calendar className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-500">Next Call Date</p>
-                    <p className="text-sm font-medium text-gray-900">{formatDate(lead.nextCallDate)}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {formatDate(lead.nextCallDate)}
+                    </p>
                   </div>
                 </div>
               )}
@@ -344,25 +355,29 @@ const LeadDetailPage = () => {
                 </div>
               )}
 
-              {lead.contributor && Array.isArray(lead.contributor) && lead.contributor.length > 0 && (
-                <div className="flex items-start gap-2">
-                  <Users className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-500 mb-1">Contributors</p>
-                    <div className="space-y-1">
-                      {lead.contributor.map((contributor, index) => {
-                        const name =
-                          typeof contributor === 'object'
-                            ? contributor.name || contributor.username || contributor.email
-                            : 'Unknown';
-                        return (
-                          <p key={index} className="text-sm text-gray-900">• {name}</p>
-                        );
-                      })}
+              {lead.contributor &&
+                Array.isArray(lead.contributor) &&
+                lead.contributor.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <Users className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-gray-500 mb-1">Contributors</p>
+                      <div className="space-y-1">
+                        {lead.contributor.map((contributor, index) => {
+                          const name =
+                            typeof contributor === 'object'
+                              ? contributor.name || contributor.username || contributor.email
+                              : 'Unknown';
+                          return (
+                            <p key={index} className="text-sm text-gray-900">
+                              • {name}
+                            </p>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
               {lead.leadOwner && (
                 <div className="flex items-start gap-2">
@@ -394,14 +409,18 @@ const LeadDetailPage = () => {
               <Clock className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-gray-500">Created</p>
-                <p className="text-xs font-medium text-gray-900">{formatDateTime(lead.createdAt)}</p>
+                <p className="text-xs font-medium text-gray-900">
+                  {formatDateTime(lead.createdAt)}
+                </p>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <Clock className="h-4 w-4 text-gray-400 mt-0.5 flex-shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-gray-500">Updated</p>
-                <p className="text-xs font-medium text-gray-900">{formatDateTime(lead.updatedAt)}</p>
+                <p className="text-xs font-medium text-gray-900">
+                  {formatDateTime(lead.updatedAt)}
+                </p>
               </div>
             </div>
           </div>
@@ -424,4 +443,3 @@ const LeadDetailPage = () => {
 };
 
 export default LeadDetailPage;
-
