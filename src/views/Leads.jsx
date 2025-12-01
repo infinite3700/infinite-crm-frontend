@@ -58,9 +58,11 @@ const Leads = () => {
       let response
       if(isFollowUpMode){
         response = await leadService.getFollowUpLeads();
-      }else if(currentUser?.role.name==='Admin'){
-        response = await leadService.getAllLeads();
-      }else{
+      }
+     // else if(currentUser?.role.name==='Admin'){
+       // response = await leadService.getAllLeads();
+     // }
+      else{
         response = await leadService.getMyLeads();
       }
       setLeads(Array.isArray(response) ? response : []);
