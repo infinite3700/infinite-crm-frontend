@@ -1,5 +1,5 @@
-import { apiMethods, authHelpers } from './apiClient';
 import { API_ENDPOINTS } from '../config/api';
+import { apiMethods, authHelpers } from './apiClient';
 
 // User service methods using the common API client
 export const userService = {
@@ -17,7 +17,6 @@ export const userService = {
 
                 // Backend returns { users: [...], pagination: {...} }
                 const apiUsers = response.users || [];
-                console.log('apiUsers', apiUsers);
 
                 // Get custom users from localStorage
                 const customUsers = [];

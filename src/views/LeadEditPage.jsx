@@ -155,8 +155,11 @@ const LeadEditPage = () => {
           typeof response.assignTo === 'object' && response.assignTo
             ? response.assignTo._id
             : response.assignTo || '',
-        // Contributors field always starts empty - users must select manually each time
-        contributor: [],
+        contributor: Array.isArray(response.contributor) 
+          ? response.contributor.map(c => 
+              typeof c === 'object' && c ? c._id : c
+            ).filter(id => id)
+          : [],
         campaignId:
           typeof response.campaignId === 'object' && response.campaignId
             ? response.campaignId._id
@@ -221,7 +224,6 @@ const LeadEditPage = () => {
       setLoadingStates((prev) => ({ ...prev, users: true }));
       const usersData = await userService.getAllUsers();
       setUsers(Array.isArray(usersData) ? usersData : []);
-      console.log('Fetched users:', usersData); // Debug log
     } catch (error) {
       console.error('Failed to fetch users:', error);
     } finally {
@@ -267,7 +269,7 @@ const LeadEditPage = () => {
       setFormData((prev) => ({
         ...prev,
         productCategory: newValue,
-        productRequirement: '', // Reset product selection when category changes
+        productRequirement: null, // Reset product selection when category changes
       }));
     } else {
       setFormData((prev) => ({
@@ -331,6 +333,7 @@ const LeadEditPage = () => {
 
     try {
       setSaving(true);
+      formData.productRequirement = formData.productRequirement || null;
       const submitData = {
         ...formData,
         contributor: formData.contributor.filter((c) => c),
@@ -572,17 +575,27 @@ const LeadEditPage = () => {
                 size="default"
               />
 
-              <FormField
-                id="currentStatus"
-                type="text"
-                label="Current Status"
-                placeholder="e.g., Follow up pending"
-                value={formData.currentStatus}
-                onChange={handleInputChange('currentStatus')}
-                icon={FileText}
-                error={errors.currentStatus}
-                size="default"
-              />
+              <div className="space-y-2">
+                <label htmlFor="currentStatus" className="text-sm font-semibold text-gray-700">
+                  Current Status
+                </label>
+                <div className="relative group">
+                  <FileText className="absolute left-3 top-3 h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors z-10" />
+                  <textarea
+                    id="currentStatus"
+                    rows={3}
+                    placeholder="e.g., Follow up pending"
+                    value={formData.currentStatus}
+                    onChange={handleInputChange('currentStatus')}
+                    className={`pl-10 w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 resize-vertical ${
+                      errors.currentStatus ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''
+                    }`}
+                  />
+                </div>
+                {errors.currentStatus && (
+                  <p className="text-xs text-red-600 mt-1">{errors.currentStatus}</p>
+                )}
+              </div>
 
               <FormField
                 id="campaignId"

@@ -79,7 +79,7 @@ export const leadService = {
   // Delete lead
   deleteLead: async (leadId) => {
     try {
-      return await crudService.delete(API_ENDPOINTS.LEADS.BASE, leadId);
+      return await crudService.deleteLead(API_ENDPOINTS.LEADS.BASE, leadId);
     } catch (error) {
       throw new Error(error.message || 'Failed to delete lead');
     }

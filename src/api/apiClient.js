@@ -203,6 +203,11 @@ export const crudService = {
     delete: async (endpoint, id) => {
         return apiMethods.delete(`${endpoint}/${id}/hard`);
     },
+
+    // delete lead
+    deleteLead: async (endpoint, id) => {
+        return apiMethods.delete(`${endpoint}/${id}`);
+    }
 };
 
 // Authentication helpers
