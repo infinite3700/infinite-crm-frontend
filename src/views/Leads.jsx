@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { userManager } from '../api';
 import { leadService } from '../api/leadService';
 import CanAccess from '../components/CanAccess';
 import LeadCard from '../components/leads/LeadCard';
@@ -51,17 +52,14 @@ const Leads = () => {
     try {
       setLoading(true);
       setError(null);
-      // Use different API based on mode
-     // const response = isFollowUpMode
-      //  ? await leadService.getFollowUpLeads()
-       // : await leadService.getAllLeads();
+      const currentUser = await userManager.getUser();
       let response
       if(isFollowUpMode){
         response = await leadService.getFollowUpLeads();
       }
-     // else if(currentUser?.role.name==='Admin'){
-       // response = await leadService.getAllLeads();
-     // }
+     else if(currentUser?.role.name==='Admin'){
+       response = await leadService.getAllLeads();
+     }
       else{
         response = await leadService.getMyLeads();
       }
