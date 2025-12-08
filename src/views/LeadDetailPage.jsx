@@ -221,8 +221,13 @@ const LeadDetailPage = () => {
 
           {lead.currentStatus && (
             <div className="mt-3 p-2.5 bg-gray-50 rounded-lg">
-              <p className="text-xs text-gray-500">Current Status</p>
-              <p className="text-sm font-medium text-gray-900 mt-0.5">{lead.currentStatus}</p>
+              <p className="text-xs text-gray-500 mb-2">Current Status</p>
+              <textarea
+                value={lead.currentStatus}
+                readOnly
+                className="w-full text-sm bg-white border border-gray-200 rounded-md p-2 resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                rows={3}
+              />
             </div>
           )}
         </CardContent>

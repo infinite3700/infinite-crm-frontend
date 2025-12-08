@@ -1,164 +1,166 @@
-import React, { useEffect, useState } from 'react';
+import { Calendar, RefreshCw, TrendingUp, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { leadService } from '../api/leadService';
 import { Card, CardContent } from '../components/ui/card';
-import { Rocket, Sparkles, Clock, Star, Zap, Heart } from 'lucide-react';
 
 const Dashboard = () => {
-  const [currentIcon, setCurrentIcon] = useState(0);
-  const [dots, setDots] = useState('');
-
-  const icons = [Rocket, Sparkles, Zap, Star];
+  const [counts, setCounts] = useState({
+    assignedCount: 0,
+    followUpCount: 0
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Animate icons rotation
-    const iconInterval = setInterval(() => {
-      setCurrentIcon((prev) => (prev + 1) % icons.length);
-    }, 2000);
+    loadDashboardData();
+  }, []);
 
-    // Animate loading dots
-    const dotsInterval = setInterval(() => {
-      setDots((prev) => {
-        if (prev === '...') return '';
-        return prev + '.';
-      });
-    }, 500);
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await leadService.getLeadCounts();
+      setCounts(data);
+    } catch (err) {
+      console.error('Dashboard error:', err);
+      setError(err.message || 'Failed to load dashboard data');
+      // Set fallback data when API fails
+      setCounts({ assignedCount: 0, followUpCount: 0 });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return () => {
-      clearInterval(iconInterval);
-      clearInterval(dotsInterval);
-    };
-  }, [icons.length]);
-
-  const CurrentIcon = icons[currentIcon];
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+        <div className="max-w-6xl mx-auto">
+          {/* Header Skeleton */}
+          <div className="mb-6">
+            <div className="h-8 bg-gray-200 rounded animate-pulse w-64 mb-2"></div>
+            <div className="h-4 bg-gray-200 rounded animate-pulse w-96"></div>
+          </div>
+          
+          {/* Stats Cards Skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            {[1, 2].map((i) => (
+              <div key={i} className="bg-white rounded-xl p-6 shadow-sm animate-pulse">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-24 mb-3"></div>
+                    <div className="h-8 bg-gray-200 rounded w-16"></div>
+                  </div>
+                  <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100">
-        {/* Floating Orbs */}
-        {[...Array(6)].map((_, i) => (
-          <div
-            key={i}
-            className={`absolute rounded-full opacity-20 animate-float`}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              width: `${20 + Math.random() * 80}px`,
-              height: `${20 + Math.random() * 80}px`,
-              background: `linear-gradient(45deg, ${
-                ['#3B82F6', '#8B5CF6', '#06B6D4', '#10B981', '#F59E0B', '#EF4444'][i]
-              }, ${['#1D4ED8', '#7C3AED', '#0891B2', '#059669', '#D97706', '#DC2626'][i]})`,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${4 + Math.random() * 4}s`
-            }}
-          />
-        ))}
-        
-        {/* Particles */}
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={`particle-${i}`}
-            className="absolute w-1 h-1 bg-blue-400 rounded-full opacity-60 animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 2}s`
-            }}
-          />
-        ))}
-      </div>
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-600 text-sm sm:text-base mt-1">
+                Welcome back! Here's what's happening with your leads today.
+              </p>
+            </div>
+            <button 
+              onClick={loadDashboardData}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Refresh
+            </button>
+          </div>
+        </div>
 
-      {/* Main Content */}
-      <Card className="relative z-10 w-full max-w-2xl mx-auto bg-white/80 backdrop-blur-sm border-0 shadow-2xl">
-        <CardContent className="p-8 sm:p-12 text-center">
-          {/* Animated Icon */}
-          <div className="mb-8">
-            <div className="relative inline-flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 mx-auto">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full animate-spin-slow opacity-20"></div>
-              <div className="absolute inset-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse"></div>
-              <div className="relative z-10 p-4 sm:p-6 bg-white rounded-full shadow-lg">
-                <CurrentIcon className="w-8 h-8 sm:w-12 sm:h-12 text-blue-600 animate-bounce" />
+        {/* Error Display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            <p className="text-sm">{error}</p>
+          </div>
+        )}
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-8">
+          {/* Total Leads Card */}
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total Leads</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-3xl sm:text-4xl font-bold text-gray-900">
+                      {counts.assignedCount?.toLocaleString() || 0}
+                    </p>
+                    <TrendingUp className="h-4 w-4 text-green-500" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">All assigned leads</p>
+                </div>
+                <div className="bg-blue-50 p-3 rounded-xl">
+                  <Users className="h-8 w-8 text-blue-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Follow Ups Card */}
+          <Card className="hover:shadow-lg transition-shadow duration-300">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-600 mb-1">Follow Ups</p>
+                  <div className="flex items-baseline gap-2">
+                    <p className="text-3xl sm:text-4xl font-bold text-gray-900">
+                      {counts.followUpCount?.toLocaleString() || 0}
+                    </p>
+                    <TrendingUp className="h-4 w-4 text-orange-500" />
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Pending follow-ups</p>
+                </div>
+                <div className="bg-orange-50 p-3 rounded-xl">
+                  <Calendar className="h-8 w-8 text-orange-600" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Stats Summary */}
+        {/* <Card>
+          <CardContent className="p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Overview</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <p className="text-2xl font-bold text-blue-600">{counts.assignedCount || 0}</p>
+                <p className="text-xs text-gray-600 mt-1">Total Leads</p>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <p className="text-2xl font-bold text-orange-600">{counts.followUpCount || 0}</p>
+                <p className="text-xs text-gray-600 mt-1">Follow Ups</p>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <p className="text-2xl font-bold text-green-600">
+                  {((counts.followUpCount / Math.max(counts.assignedCount, 1)) * 100).toFixed(0)}%
+                </p>
+                <p className="text-xs text-gray-600 mt-1">Follow Up Rate</p>
+              </div>
+              <div className="text-center p-4 bg-gray-50 rounded-lg">
+                <p className="text-2xl font-bold text-purple-600">{counts.assignedCount - counts.followUpCount || 0}</p>
+                <p className="text-xs text-gray-600 mt-1">Other Leads</p>
               </div>
             </div>
-          </div>
-
-          {/* Main Title */}
-          <div className="mb-6">
-            <h1 className="text-3xl sm:text-5xl font-bold mb-4">
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent animate-gradient">
-                Dashboard
-              </span>
-            </h1>
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-700 mb-2">
-              Coming Soon{dots}
-            </h2>
-            <p className="text-gray-600 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
-              We're crafting an amazing dashboard experience with powerful analytics, 
-              real-time insights, and beautiful visualizations.
-            </p>
-          </div>
-
-          {/* Feature Preview */}
-          <div className="mb-8">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                { icon: Sparkles, title: 'Analytics', desc: 'Real-time insights' },
-                { icon: Zap, title: 'Performance', desc: 'Lightning fast' },
-                { icon: Heart, title: 'Experience', desc: 'User-friendly' }
-              ].map((feature, index) => (
-                <div 
-                  key={index}
-                  className="p-4 bg-gradient-to-br from-white to-gray-50 rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300 animate-fade-in-up"
-                  style={{ animationDelay: `${index * 0.2}s` }}
-                >
-                  <feature.icon className="w-6 h-6 text-blue-500 mx-auto mb-2" />
-                  <h3 className="font-semibold text-gray-800 text-sm">{feature.title}</h3>
-                  <p className="text-xs text-gray-600 mt-1">{feature.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Progress Indicator */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center space-x-2 mb-3">
-              <Clock className="w-4 h-4 text-blue-500" />
-              <span className="text-sm text-gray-600 font-medium">Development in Progress</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-blue-500 to-purple-600 rounded-full animate-progress"></div>
-            </div>
-            <div className="flex justify-between text-xs text-gray-500 mt-2">
-              <span>Design</span>
-              <span>Development</span>
-              <span>Testing</span>
-              <span>Launch</span>
-            </div>
-          </div>
-
-          {/* Call to Action */}
-          <div className="space-y-4">
-            <p className="text-sm text-gray-600">
-              Stay tuned for an incredible dashboard experience!
-            </p>
-            <div className="flex justify-center space-x-2">
-              {[...Array(5)].map((_, i) => (
-                <div
-                  key={i}
-                  className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"
-                  style={{ animationDelay: `${i * 0.1}s` }}
-                />
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Additional Floating Elements */}
-      <div className="absolute top-10 left-10 w-6 h-6 bg-yellow-400 rounded-full opacity-60 animate-ping" />
-      <div className="absolute top-20 right-20 w-4 h-4 bg-green-400 rounded-full opacity-60 animate-pulse" />
-      <div className="absolute bottom-20 left-20 w-8 h-8 bg-pink-400 rounded-full opacity-40 animate-bounce" />
-      <div className="absolute bottom-10 right-10 w-5 h-5 bg-purple-400 rounded-full opacity-50 animate-ping" />
+          </CardContent>
+        </Card> */}
+      </div>
     </div>
   );
 };
