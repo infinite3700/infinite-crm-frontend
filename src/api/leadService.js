@@ -41,11 +41,12 @@ export const leadService = {
   // Get lead counts
   getLeadCounts: async () => {
     try {
-      const response = await apiMethods.get(API_ENDPOINTS.LEADS.GET_COUNT);
+      const response = await apiMethods.get(API_ENDPOINTS.LEADS.GET_COUNT);      
+      // Return the actual response or fallback structure
       return response || { assignedCount: 0, followUpCount: 0 };
     } catch (error) {
       console.error('Failed to fetch lead counts:', error);
-      return { assignedCount: 0, followUpCount: 0 };
+      throw new Error(error.message || 'Failed to fetch lead counts');
     }
   },
 
