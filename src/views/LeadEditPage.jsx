@@ -672,19 +672,16 @@ const LeadEditPage = () => {
           >
             <span className="text-sm">Cancel</span>
           </Button>
-          <Button type="submit" disabled={saving} className="flex-1 h-10">
-            {saving ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-1.5 animate-spin" />
-                <span className="text-sm">{isEditMode ? 'Updating...' : 'Creating...'}</span>
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-1.5" />
-                <span className="text-sm">{isEditMode ? 'Update' : 'Create'}</span>
-              </>
-            )}
-          </Button>
+          {saving ? (
+            <div className="flex-1 flex justify-center items-center h-10">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+            </div>
+          ) : (
+            <Button type="submit" className="flex-1 h-10">
+              <Save className="h-4 w-4 mr-1.5" />
+              <span className="text-sm">{isEditMode ? 'Update' : 'Create'}</span>
+            </Button>
+          )}
         </div>
       </form>
     </div>
