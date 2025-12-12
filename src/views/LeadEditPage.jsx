@@ -117,6 +117,19 @@ const LeadEditPage = () => {
     }
   }, [formData.productCategory, allProducts]);
 
+  // Update product category when products are loaded and we have a product requirement
+  useEffect(() => {
+    if (isEditMode && formData.productRequirement && !formData.productCategory && allProducts.length > 0) {
+      const selectedProduct = allProducts.find((p) => p._id === formData.productRequirement);
+      if (selectedProduct && selectedProduct.categoryId) {
+        setFormData((prev) => ({
+          ...prev,
+          productCategory: selectedProduct.categoryId,
+        }));
+      }
+    }
+  }, [allProducts, formData.productRequirement, formData.productCategory, isEditMode]);
+
   const loadLead = async () => {
     try {
       setLoading(true);
@@ -130,9 +143,18 @@ const LeadEditPage = () => {
       // Find the category of the selected product
       let productCategoryId = '';
       if (productReqId) {
-        const selectedProduct = allProducts.find((p) => p._id === productReqId);
-        if (selectedProduct) {
-          productCategoryId = selectedProduct.categoryId;
+        // First, try to get category from populated product data in response
+        if (typeof response.productRequirement === 'object' && response.productRequirement?.category) {
+          // If category is an object, extract its _id
+          productCategoryId = typeof response.productRequirement.category === 'object' 
+            ? response.productRequirement.category._id || response.productRequirement.category.$oid
+            : response.productRequirement.category;
+        } else {
+          // Fallback: find the product in allProducts list
+          const selectedProduct = allProducts.find((p) => p._id === productReqId);
+          if (selectedProduct) {
+            productCategoryId = selectedProduct.categoryId;
+          }
         }
       }
 
